@@ -4,10 +4,14 @@ function calcular(){
 
 const cupo = parseFloat(document.getElementById('cupo').value);
 const diaLibre = parseInt(document.getElementById('diaLibre').value);
-const inicio = parseFecha(document.getElementById('fechaInicio').value);
-const fin = parseFecha(document.getElementById('fechaFin').value);
 
-if(!cupo || !diaLibre || !inicio || !fin) return;
+const inicioValor = document.getElementById('fechaInicio').value;
+const finValor = document.getElementById('fechaFin').value;
+
+if(!cupo || !diaLibre || !inicioValor || !finValor) return;
+
+const inicio = parseFecha(inicioValor);
+const fin = parseFecha(finValor);
 
 const tbody = document.querySelector('#tabla tbody');
 tbody.innerHTML = '';
@@ -22,17 +26,8 @@ const finMesReal = new Date(current.getFullYear(), current.getMonth()+1, 0);
 const mesInicio = new Date(Math.max(inicioMesReal, inicio));
 const mesFin = new Date(Math.min(finMesReal, fin));
 
-const diasLaboralesMes = contarDias(
-inicioMesReal,
-finMesReal,
-diaLibre
-);
-
-const diasTrabajados = contarDias(
-mesInicio,
-mesFin,
-diaLibre
-);
+const diasLaboralesMes = contarDias(inicioMesReal, finMesReal, diaLibre);
+const diasTrabajados = contarDias(mesInicio, mesFin, diaLibre);
 
 const monto = (cupo / diasLaboralesMes) * diasTrabajados;
 
@@ -50,6 +45,7 @@ const row = `
 tbody.innerHTML += row;
 
 current = new Date(current.getFullYear(), current.getMonth()+1, 1);
+
 }
 
 }
@@ -78,7 +74,11 @@ return count;
 function parseFecha(valor){
 
 const partes = valor.split("-");
-return new Date(partes[0], partes[1]-1, partes[2]);
+return new Date(
+parseInt(partes[0]),
+parseInt(partes[1]) - 1,
+parseInt(partes[2])
+);
 
 }
 
@@ -94,7 +94,7 @@ return `${dia}/${mes}/${anio}`;
 
 function nombreMes(fecha){
 
-return fecha.toLocaleString('es-ES', { month: 'long' });
+return fecha.toLocaleString('es', { month: 'long' });
 
 }
 
