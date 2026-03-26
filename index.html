@@ -3,63 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Calculadora Cupo Combustible</title>
+<title>Calculadora Combustible</title>
 
 <style>
 
 body{
-font-family: Arial, sans-serif;
+font-family: Segoe UI, Arial, sans-serif;
 background:#f5f7fb;
-padding:20px;
+padding:15px;
+margin:0;
 }
 
 .card{
 background:white;
 padding:20px;
-border-radius:10px;
+border-radius:12px;
 max-width:900px;
 margin:auto;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+h2{
+margin-top:0;
+margin-bottom:15px;
+font-size:20px;
 }
 
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:10px;
+gap:12px;
 margin-bottom:20px;
 }
 
+.field{
+display:flex;
+flex-direction:column;
+}
+
+label{
+font-size:12px;
+font-weight:600;
+margin-bottom:4px;
+color:#444;
+}
+
 input,select{
-padding:8px;
-border-radius:6px;
-border:1px solid #ccc;
+padding:10px;
 width:100%;
+border-radius:8px;
+border:1px solid #d1d5db;
+font-size:14px;
+box-sizing:border-box;
 }
 
 button{
 background:#2563eb;
 color:white;
 border:none;
-padding:10px;
-border-radius:6px;
+padding:12px;
+border-radius:8px;
 cursor:pointer;
+font-weight:600;
+width:100%;
+margin-top:5px;
+}
+
+button:hover{
+background:#1d4ed8;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
 margin-top:20px;
+font-size:13px;
 }
 
 th,td{
-border:1px solid #ddd;
+border:1px solid #e5e7eb;
 padding:8px;
 text-align:center;
 }
 
 th{
 background:#eef2ff;
+font-weight:600;
+}
+
+tbody tr:nth-child(even){
+background:#fafafa;
+}
+
+/* Responsive móvil */
+@media(max-width:700px){
+
+.grid{
+grid-template-columns:1fr;
+}
+
+.card{
+padding:15px;
+}
+
+h2{
+font-size:18px;
+}
+
+table{
+font-size:12px;
+}
+
+th,td{
+padding:6px;
+}
+
 }
 
 </style>
@@ -73,12 +131,12 @@ background:#eef2ff;
 
 <div class="grid">
 
-<div>
+<div class="field">
 <label>Cupo mensual</label>
 <input type="number" id="cupo">
 </div>
 
-<div>
+<div class="field">
 <label>Día libre</label>
 <select id="diaLibre">
 <option value="">Seleccionar</option>
@@ -87,12 +145,12 @@ background:#eef2ff;
 </select>
 </div>
 
-<div>
+<div class="field">
 <label>Fecha inicio</label>
 <input type="date" id="fechaInicio">
 </div>
 
-<div>
+<div class="field">
 <label>Fecha fin</label>
 <input type="date" id="fechaFin">
 </div>
@@ -123,45 +181,52 @@ background:#eef2ff;
 
 function calcular(){
 
-const cupo = parseFloat(document.getElementById("cupo").value);
-const diaLibre = parseInt(document.getElementById("diaLibre").value);
+var cupo = parseFloat(document.getElementById("cupo").value);
+var diaLibre = parseInt(document.getElementById("diaLibre").value);
 
-const inicioValor = document.getElementById("fechaInicio").value;
-const finValor = document.getElementById("fechaFin").value;
+var inicioValor = document.getElementById("fechaInicio").value;
+var finValor = document.getElementById("fechaFin").value;
 
-if(!cupo || !diaLibre || !inicioValor || !finValor) return;
+if(!cupo || !diaLibre || !inicioValor || !finValor){
+return;
+}
 
-const inicio = parseFecha(inicioValor);
-const fin = parseFecha(finValor);
+var inicio = parseFecha(inicioValor);
+var fin = parseFecha(finValor);
 
-const tbody = document.getElementById("resultado");
+var tbody = document.getElementById("resultado");
 tbody.innerHTML = "";
 
-let current = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+var current = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
 
 while(current <= fin){
 
-const inicioMes = new Date(current.getFullYear(), current.getMonth(),1);
-const finMes = new Date(current.getFullYear(), current.getMonth()+1,0);
+var inicioMes = new Date(current.getFullYear(), current.getMonth(),1);
+var finMes = new Date(current.getFullYear(), current.getMonth()+1,0);
 
-const desde = new Date(Math.max(inicioMes, inicio));
-const hasta = new Date(Math.min(finMes, fin));
+var desde = inicioMes;
+if(inicio > desde){
+desde = inicio;
+}
 
-const diasMes = contarDias(inicioMes, finMes, diaLibre);
-const diasTrabajados = contarDias(desde, hasta, diaLibre);
+var hasta = finMes;
+if(fin < hasta){
+hasta = fin;
+}
 
-const monto = (cupo / diasMes) * diasTrabajados;
+var diasMes = contarDias(inicioMes, finMes, diaLibre);
+var diasTrabajados = contarDias(desde, hasta, diaLibre);
 
-const fila = `
-<tr>
-<td>${nombreMes(current)}</td>
-<td>${formato(desde)}</td>
-<td>${formato(hasta)}</td>
-<td>${diasMes}</td>
-<td>${diasTrabajados}</td>
-<td>$${monto.toFixed(2)}</td>
-</tr>
-`;
+var monto = (cupo / diasMes) * diasTrabajados;
+
+var fila = "<tr>" +
+"<td>"+nombreMes(current)+"</td>" +
+"<td>"+formato(desde)+"</td>" +
+"<td>"+formato(hasta)+"</td>" +
+"<td>"+diasMes+"</td>" +
+"<td>"+diasTrabajados+"</td>" +
+"<td>$"+monto.toFixed(2)+"</td>" +
+"</tr>";
 
 tbody.innerHTML += fila;
 
@@ -173,12 +238,12 @@ current = new Date(current.getFullYear(), current.getMonth()+1, 1);
 
 function contarDias(inicio, fin, diaLibre){
 
-let count = 0;
-let d = new Date(inicio);
+var count = 0;
+var d = new Date(inicio);
 
 while(d <= fin){
 
-const day = d.getDay();
+var day = d.getDay();
 
 if(day !== 0 && day !== diaLibre){
 count++;
@@ -194,24 +259,30 @@ return count;
 
 function parseFecha(valor){
 
-const partes = valor.split("-");
+var partes = valor.split("-");
 return new Date(partes[0], partes[1]-1, partes[2]);
 
 }
 
 function formato(fecha){
 
-const d = String(fecha.getDate()).padStart(2,'0');
-const m = String(fecha.getMonth()+1).padStart(2,'0');
-const y = fecha.getFullYear();
+var d = ("0" + fecha.getDate()).slice(-2);
+var m = ("0" + (fecha.getMonth()+1)).slice(-2);
+var y = fecha.getFullYear();
 
-return `${d}/${m}/${y}`;
+return d + "/" + m + "/" + y;
 
 }
 
 function nombreMes(fecha){
 
-return fecha.toLocaleString('es',{month:'long'});
+var meses = [
+"Enero","Febrero","Marzo","Abril",
+"Mayo","Junio","Julio","Agosto",
+"Septiembre","Octubre","Noviembre","Diciembre"
+];
+
+return meses[fecha.getMonth()];
 
 }
 
