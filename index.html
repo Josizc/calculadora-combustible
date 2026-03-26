@@ -1,87 +1,101 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora de Combustible</title>
-  <style>
-    body {
-      font-family: Segoe UI, Arial, sans-serif;
-      background: #f5f7fb;
-      padding: 30px;
-    }
+<script>
 
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      max-width: 900px;
-      margin: auto;
-    }
+function calcular(){
 
-    h1 {
-      font-size: 20px;
-      margin-bottom: 20px;
-    }
+const cupo = parseFloat(document.getElementById('cupo').value);
+const diaLibre = parseInt(document.getElementById('diaLibre').value);
+const inicio = parseFecha(document.getElementById('fechaInicio').value);
+const fin = parseFecha(document.getElementById('fechaFin').value);
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
+if(!cupo || !diaLibre || !inicio || !fin) return;
 
-    label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #444;
-    }
+const tbody = document.querySelector('#tabla tbody');
+tbody.innerHTML = '';
 
-    input, select {
-      width: 100%;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
+let current = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
 
-    button {
-      background: #2563eb;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+while(current <= fin){
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
+const inicioMesReal = new Date(current.getFullYear(), current.getMonth(), 1);
+const finMesReal = new Date(current.getFullYear(), current.getMonth()+1, 0);
 
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 8px;
-      text-align: center;
-      font-size: 13px;
-    }
+const mesInicio = new Date(Math.max(inicioMesReal, inicio));
+const mesFin = new Date(Math.min(finMesReal, fin));
 
-    th {
-      background: #eef2ff;
-    }
-  </style>
-</head>
-<body>
+const diasLaboralesMes = contarDias(
+inicioMesReal,
+finMesReal,
+diaLibre
+);
 
-<div class="card">
-  <h1>Calculadora de Cupo de Combustible</h1>
+const diasTrabajados = contarDias(
+mesInicio,
+mesFin,
+diaLibre
+);
 
-  <div class="grid">
-    <div>
-      <label>Cupo mensual</label>
-      <input type="number" id="cupo" placeholder="Ej: 120" />
-    </div>
+const monto = (cupo / diasLaboralesMes) * diasTrabajados;
 
-    <
+const row = `
+<tr>
+<td>${nombreMes(current)}</td>
+<td>${formato(mesInicio)}</td>
+<td>${formato(mesFin)}</td>
+<td>${diasLaboralesMes}</td>
+<td>${diasTrabajados}</td>
+<td>$${monto.toFixed(2)}</td>
+</tr>
+`;
+
+tbody.innerHTML += row;
+
+current = new Date(current.getFullYear(), current.getMonth()+1, 1);
+}
+
+}
+
+function contarDias(inicio, fin, diaLibre){
+
+let count = 0;
+let d = new Date(inicio);
+
+while(d <= fin){
+
+const day = d.getDay();
+
+if(day !== 0 && day !== diaLibre){
+count++;
+}
+
+d.setDate(d.getDate()+1);
+
+}
+
+return count;
+
+}
+
+function parseFecha(valor){
+
+const partes = valor.split("-");
+return new Date(partes[0], partes[1]-1, partes[2]);
+
+}
+
+function formato(fecha){
+
+const dia = String(fecha.getDate()).padStart(2,'0');
+const mes = String(fecha.getMonth()+1).padStart(2,'0');
+const anio = fecha.getFullYear();
+
+return `${dia}/${mes}/${anio}`;
+
+}
+
+function nombreMes(fecha){
+
+return fecha.toLocaleString('es-ES', { month: 'long' });
+
+}
+
+</script>
