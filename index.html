@@ -1,48 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Calculadora Cupo Combustible</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+background:#f5f7fb;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+max-width:900px;
+margin:auto;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:20px;
+}
+
+input,select{
+padding:8px;
+border-radius:6px;
+border:1px solid #ccc;
+width:100%;
+}
+
+button{
+background:#2563eb;
+color:white;
+border:none;
+padding:10px;
+border-radius:6px;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:8px;
+text-align:center;
+}
+
+th{
+background:#eef2ff;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Calculadora Cupo de Combustible</h2>
+
+<div class="grid">
+
+<div>
+<label>Cupo mensual</label>
+<input type="number" id="cupo">
+</div>
+
+<div>
+<label>Día libre</label>
+<select id="diaLibre">
+<option value="">Seleccionar</option>
+<option value="1">Lunes</option>
+<option value="6">Sábado</option>
+</select>
+</div>
+
+<div>
+<label>Fecha inicio</label>
+<input type="date" id="fechaInicio">
+</div>
+
+<div>
+<label>Fecha fin</label>
+<input type="date" id="fechaFin">
+</div>
+
+</div>
+
+<button onclick="calcular()">Calcular</button>
+
+<table>
+<thead>
+<tr>
+<th>Mes</th>
+<th>Inicio</th>
+<th>Fin</th>
+<th>Días laborales</th>
+<th>Días trabajados</th>
+<th>Monto</th>
+</tr>
+</thead>
+
+<tbody id="resultado"></tbody>
+
+</table>
+
+</div>
+
 <script>
 
 function calcular(){
 
-const cupo = parseFloat(document.getElementById('cupo').value);
-const diaLibre = parseInt(document.getElementById('diaLibre').value);
+const cupo = parseFloat(document.getElementById("cupo").value);
+const diaLibre = parseInt(document.getElementById("diaLibre").value);
 
-const inicioValor = document.getElementById('fechaInicio').value;
-const finValor = document.getElementById('fechaFin').value;
+const inicioValor = document.getElementById("fechaInicio").value;
+const finValor = document.getElementById("fechaFin").value;
 
 if(!cupo || !diaLibre || !inicioValor || !finValor) return;
 
 const inicio = parseFecha(inicioValor);
 const fin = parseFecha(finValor);
 
-const tbody = document.querySelector('#tabla tbody');
-tbody.innerHTML = '';
+const tbody = document.getElementById("resultado");
+tbody.innerHTML = "";
 
 let current = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
 
 while(current <= fin){
 
-const inicioMesReal = new Date(current.getFullYear(), current.getMonth(), 1);
-const finMesReal = new Date(current.getFullYear(), current.getMonth()+1, 0);
+const inicioMes = new Date(current.getFullYear(), current.getMonth(),1);
+const finMes = new Date(current.getFullYear(), current.getMonth()+1,0);
 
-const mesInicio = new Date(Math.max(inicioMesReal, inicio));
-const mesFin = new Date(Math.min(finMesReal, fin));
+const desde = new Date(Math.max(inicioMes, inicio));
+const hasta = new Date(Math.min(finMes, fin));
 
-const diasLaboralesMes = contarDias(inicioMesReal, finMesReal, diaLibre);
-const diasTrabajados = contarDias(mesInicio, mesFin, diaLibre);
+const diasMes = contarDias(inicioMes, finMes, diaLibre);
+const diasTrabajados = contarDias(desde, hasta, diaLibre);
 
-const monto = (cupo / diasLaboralesMes) * diasTrabajados;
+const monto = (cupo / diasMes) * diasTrabajados;
 
-const row = `
+const fila = `
 <tr>
 <td>${nombreMes(current)}</td>
-<td>${formato(mesInicio)}</td>
-<td>${formato(mesFin)}</td>
-<td>${diasLaboralesMes}</td>
+<td>${formato(desde)}</td>
+<td>${formato(hasta)}</td>
+<td>${diasMes}</td>
 <td>${diasTrabajados}</td>
 <td>$${monto.toFixed(2)}</td>
 </tr>
 `;
 
-tbody.innerHTML += row;
+tbody.innerHTML += fila;
 
 current = new Date(current.getFullYear(), current.getMonth()+1, 1);
 
@@ -74,28 +195,27 @@ return count;
 function parseFecha(valor){
 
 const partes = valor.split("-");
-return new Date(
-parseInt(partes[0]),
-parseInt(partes[1]) - 1,
-parseInt(partes[2])
-);
+return new Date(partes[0], partes[1]-1, partes[2]);
 
 }
 
 function formato(fecha){
 
-const dia = String(fecha.getDate()).padStart(2,'0');
-const mes = String(fecha.getMonth()+1).padStart(2,'0');
-const anio = fecha.getFullYear();
+const d = String(fecha.getDate()).padStart(2,'0');
+const m = String(fecha.getMonth()+1).padStart(2,'0');
+const y = fecha.getFullYear();
 
-return `${dia}/${mes}/${anio}`;
+return `${d}/${m}/${y}`;
 
 }
 
 function nombreMes(fecha){
 
-return fecha.toLocaleString('es', { month: 'long' });
+return fecha.toLocaleString('es',{month:'long'});
 
 }
 
 </script>
+
+</body>
+</html>
