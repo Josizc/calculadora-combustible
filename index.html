@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Combustible</title>
+  <style>
+    body {
+      font-family: Segoe UI, Arial, sans-serif;
+      background: #f5f7fb;
+      padding: 30px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    th {
+      background: #eef2ff;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Calculadora Combustible</h1>
+
+  <div class="grid">
+    <div>
+      <label>Cupo mensual</label>
+      <input type="number" id="cupo" />
+    </div>
+
+    <div>
+      <label>Día libre</label>
+      <select id="diaLibre">
+        <option value="">Seleccionar</option>
+        <option value="1">Lunes</option>
+        <option value="6">Sábado</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Fecha inicio</label>
+      <input type="date" id="fechaInicio" />
+    </div>
+
+    <div>
+      <label>Fecha fin</label>
+      <input type="date" id="fechaFin" />
+    </div>
+  </div>
+
+  <button onclick="calcular()">Calcular</button>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Mes</th>
+        <th>Fecha Inicio</th>
+        <th>Fecha Fin</th>
+        <th>Días Laborales</th>
+        <th>Días Trabajados</th>
+        <th>Monto</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+function calcular(){
+
+const cupo = parseFloat(document.getElementById('cupo').value);
+const diaLibre = parseInt(document.getElementById('diaLibre').value);
+const inicio = new Date(document.getElementById('fechaInicio').value);
+const fin = new Date(document.getElementById('fechaFin').value);
+
+if(!cupo || !diaLibre || !inicio || !fin) return;
+
+const tbody = document.querySelector('#tabla tbody');
+tbody.innerHTML = '';
+
+let current = new Date(inicio.getFullYear(), inicio.getMonth(), 1);
+
+while(current <= fin){
+
+const mesInicio = new Date(
+Math.max(current, inicio)
+);
+
+const mesFin = new Date(
+Math.min(
+new Date(current.getFullYear(), current.getMonth()+1, 0),
+fin
+)
+);
+
+const diasLaboralesMes = contarDias(
+new Date(current.getFullYear(), current.getMonth(),1),
+new Date(current.getFullYear(), current.getMonth()+1,0),
+diaLibre
+);
+
+const diasTrabajados = contarDias(
+mesInicio,
+mesFin,
+diaLibre
+);
+
+const monto = (cupo / diasLaboralesMes) * diasTrabajados;
+
+const row = `
+<tr>
+<td>${current.toLocaleString('es',{month:'long'})}</td>
+<td>${formato(mesInicio)}</td>
+<td>${formato(mesFin)}</td>
+<td>${diasLaboralesMes}</td>
+<td>${diasTrabajados}</td>
+<td>$${monto.toFixed(2)}</td>
+</tr>
+`;
+
+tbody.innerHTML += row;
+
+current = new Date(current.getFullYear(), current.getMonth()+1, 1);
+}
+}
+
+function contarDias(inicio, fin, diaLibre){
+let count = 0;
+let d = new Date(inicio);
+
+while(d <= fin){
+const day = d.getDay();
+
+if(day !== 0 && day !== diaLibre){
+count++;
+}
+
+d.setDate(d.getDate()+1);
+}
+
+return count;
+}
+
+function formato(fecha){
+return fecha.toISOString().split('T')[0];
+}
+</script>
+
+</body>
+</html>
